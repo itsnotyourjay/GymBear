@@ -6,6 +6,9 @@ worker/node_modules/
 dist/
 worker/dist/
 
+# TypeScript build info
+*.tsbuildinfo
+
 # Vite
 .vite/
 
