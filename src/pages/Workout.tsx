@@ -12,6 +12,8 @@ export default function Workout() {
   const navigate     = useNavigate()
   const userProfile  = useGymBearStore((s) => s.userProfile)
 
+  const setBrunoAnimation = useGymBearStore((s) => s.setBrunoAnimation)
+
   const {
     plan, isWorkoutActive, activeSession,
     startSession, completeSet, undoLastSet,
@@ -46,6 +48,11 @@ export default function Workout() {
   useEffect(() => {
     if (activeSession?.note) setNoteText(activeSession.note)
   }, [activeSession?.note])
+
+  // Bruno: switch to pre-workout when rest timer ends
+  useEffect(() => {
+    if (!restTimerActive) setBrunoAnimation('pre-workout')
+  }, [restTimerActive]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!plan) {
     return (
@@ -171,9 +178,11 @@ export default function Workout() {
               isCurrent={setIndex === completedSets.length}
               onComplete={(weight, reps) => {
                 completeSet(currentExerciseIndex, weight, reps)
+                setBrunoAnimation('set-complete')
                 const isLast = setIndex + 1 >= targetSets
                 const rest = currentEx?.restSeconds ?? 60
                 startRestTimer(rest)
+                setTimeout(() => setBrunoAnimation('rest-timer'), 1200)
                 if (isLast) {
                   // Auto-advance to next exercise after last set
                   setTimeout(() => {

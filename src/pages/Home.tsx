@@ -8,11 +8,13 @@ import { useAIPlan, useBrunoQuote } from '../hooks/useAIPlan'
 import { loadStreak, loadAllSessions } from '../lib/storage'
 import { isGymDay, todayDayName, DAY_LABELS, DAY_NAMES, type DayName } from '../lib/dates'
 import { getExerciseById, MUSCLE_GROUP_LABELS, type MuscleGroup } from '../data/exercises'
+import Bruno from '../components/Bruno'
 import BottomNav from '../components/BottomNav'
 
 export default function Home() {
   const navigate    = useNavigate()
   const userProfile = useGymBearStore((s) => s.userProfile)
+  const bruno        = useGymBearStore((s) => s.bruno)
   const { isWorkoutActive }         = useWorkoutStore()
   const { plan, loading: planLoading } = useAIPlan()
   const quote                           = useBrunoQuote()
@@ -21,6 +23,9 @@ export default function Home() {
   const [lastSession, setLast]  = useState<null | { date: string; exercises: string[] }>(null)
 
   const gymDay = isGymDay(userProfile?.gymDays ?? [])
+
+  // Set Bruno animation based on context
+  const brunoState = gymDay ? 'pre-workout' : 'rest-day' as const
 
   useEffect(() => {
     setStreak(loadStreak())
@@ -58,9 +63,9 @@ export default function Home() {
         </div>
         <button
           onClick={() => navigate('/wardrobe')}
-          className="w-12 h-12 rounded-2xl bg-blue-dark/50 flex items-center justify-center text-2xl"
+          className="w-14 h-14 rounded-2xl bg-blue-dark/50 flex items-center justify-center"
         >
-          🐻
+          <Bruno state="idle" accessory={bruno.activeAccessory} size={44} />
         </button>
       </div>
 
@@ -82,15 +87,23 @@ export default function Home() {
           <Flame size={44} className={streak.current > 0 ? 'text-orange-gym' : 'text-off-white/20'} />
         </motion.div>
 
-        {/* Bruno quote */}
+        {/* Bruno + quote card */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="bg-blue-dark/30 rounded-2xl px-5 py-4 border border-blue-dark/60"
+          className="bg-blue-dark/30 rounded-2xl px-5 py-4 border border-blue-dark/60 flex items-center gap-4"
         >
-          <div className="text-off-white/40 text-xs mb-1">🐻 Bruno says</div>
-          <p className="text-off-white/80 text-sm italic">"{quote}"</p>
+          <Bruno
+            state={brunoState}
+            accessory={bruno.activeAccessory}
+            level={bruno.level}
+            size={72}
+          />
+          <div className="flex-1 min-w-0">
+            <div className="text-off-white/40 text-xs mb-1">Bruno says</div>
+            <p className="text-off-white/85 text-sm italic leading-snug">&ldquo;{quote}&rdquo;</p>
+          </div>
         </motion.div>
 
         {/* Today's workout card */}

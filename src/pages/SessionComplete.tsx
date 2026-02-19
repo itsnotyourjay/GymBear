@@ -6,6 +6,7 @@ import type { WorkoutSession } from '../store/useWorkoutStore'
 import { useGymBearStore } from '../store/useGymBearStore'
 import { saveSession, loadPR, savePR, saveStreak, loadStreak, loadAllSessions, type SessionData } from '../lib/storage'
 import { getExerciseById } from '../data/exercises'
+import Bruno from '../components/Bruno'
 
 function fireConfetti() {
   try {
@@ -23,11 +24,13 @@ interface Props {
 }
 
 export default function SessionComplete({ session }: Props) {
-  const navigate    = useNavigate()
-  const addBrunoXP  = useGymBearStore((s) => s.addBrunoXP)
-  const [prs, setPRs] = useState<string[]>([])
-  const [saved, setSaved] = useState(false)
-  const hasSaved = useRef(false)
+  const navigate           = useNavigate()
+  const addBrunoXP         = useGymBearStore((s) => s.addBrunoXP)
+  const bruno              = useGymBearStore((s) => s.bruno)
+  const setBrunoAnimation  = useGymBearStore((s) => s.setBrunoAnimation)
+  const [prs, setPRs]      = useState<string[]>([])
+  const [saved, setSaved]  = useState(false)
+  const hasSaved           = useRef(false)
 
   const durationSeconds = session.startTime
     ? Math.round((Date.now() - new Date(session.startTime).getTime()) / 1000)
@@ -60,7 +63,12 @@ export default function SessionComplete({ session }: Props) {
         }
       }
       setPRs(newPRs)
-      if (newPRs.length > 0) fireConfetti()
+      if (newPRs.length > 0) {
+        fireConfetti()
+        setBrunoAnimation('pr-achieved')
+      } else {
+        setBrunoAnimation('session-complete')
+      }
 
       // Build session data for storage
       const exerciseIds = session.exercises.map((ex) => ex.exerciseId)
@@ -111,9 +119,14 @@ export default function SessionComplete({ session }: Props) {
         initial={{ scale: 0, rotate: -15 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-        className="text-8xl mb-4"
+        className="mb-2"
       >
-        🐻
+        <Bruno
+          state={prs.length > 0 ? 'pr-achieved' : 'session-complete'}
+          accessory={bruno.activeAccessory}
+          level={bruno.level}
+          size={120}
+        />
       </motion.div>
 
       <motion.h1
