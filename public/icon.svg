@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#1A1A2E"/>
+  <!-- Bear ears -->
+  <circle cx="158" cy="136" r="70" fill="#8B5E3C"/>
+  <circle cx="158" cy="136" r="40" fill="#C49A6C"/>
+  <circle cx="354" cy="136" r="70" fill="#8B5E3C"/>
+  <circle cx="354" cy="136" r="40" fill="#C49A6C"/>
+  <!-- Body -->
+  <ellipse cx="256" cy="370" rx="145" ry="120" fill="#8B5E3C"/>
+  <!-- Belly -->
+  <ellipse cx="256" cy="382" rx="88" ry="80" fill="#C49A6C"/>
+  <!-- Head -->
+  <circle cx="256" cy="220" r="145" fill="#8B5E3C"/>
+  <!-- Muzzle -->
+  <ellipse cx="256" cy="265" rx="64" ry="52" fill="#C49A6C"/>
+  <!-- Eyes -->
+  <circle cx="210" cy="198" r="24" fill="#0F0A08"/>
+  <circle cx="302" cy="198" r="24" fill="#0F0A08"/>
+  <circle cx="218" cy="190" r="8"  fill="white" opacity="0.7"/>
+  <circle cx="310" cy="190" r="8"  fill="white" opacity="0.7"/>
+  <!-- Nose -->
+  <ellipse cx="256" cy="248" rx="20" ry="14" fill="#0F0A08"/>
+  <!-- Smile -->
+  <path d="M224 270 Q256 295 288 270" stroke="#0F0A08" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- Red electric accent bar -->
+  <rect x="160" y="430" width="192" height="18" rx="9" fill="#E94560" opacity="0.85"/>
+</svg>

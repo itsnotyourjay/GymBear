@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useWakeLock } from '../hooks/useWakeLock'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, Check, Minus, Plus, X, FileText } from 'lucide-react'
@@ -21,6 +22,9 @@ export default function Workout() {
     currentExerciseIndex, setCurrentExerciseIndex,
     startRestTimer, restTimerActive,
   } = useWorkoutStore()
+
+  // Keep screen awake while a workout is active
+  useWakeLock(isWorkoutActive)
 
   const [sessionDone, setSessionDone] = useState(false)
   const [finishedSession, setFinishedSession] = useState<ReturnType<typeof finishSession> extends infer T ? T : never>(null)

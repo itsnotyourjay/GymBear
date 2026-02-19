@@ -3,6 +3,7 @@ import { useEffect, lazy, Suspense } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGymBearStore } from './store/useGymBearStore'
 import { setupSyncOnReconnect } from './lib/storage'
+import A2HSPrompt from './components/A2HSPrompt'
 import Onboarding from './pages/Onboarding'
 import PinLock from './pages/PinLock'
 import Home from './pages/Home'
@@ -13,16 +14,7 @@ const ExerciseLibrary = lazy(() => import('./pages/ExerciseLibrary'))
 const History         = lazy(() => import('./pages/History'))
 const Wardrobe        = lazy(() => import('./pages/Wardrobe'))
 const Progress        = lazy(() => import('./pages/Progress'))
-
-function PlaceholderScreen({ name }: { name: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-center p-8">
-      <h1 className="text-5xl text-red-elec font-heading mb-4">🐻 GymBear</h1>
-      <p className="text-off-white text-xl opacity-60">{name}</p>
-      <p className="text-off-white text-sm opacity-30 mt-2">Coming soon…</p>
-    </div>
-  )
-}
+const Settings        = lazy(() => import('./pages/Settings'))
 
 const slideVariants = {
   initial: { x: 24, opacity: 0 },
@@ -65,7 +57,7 @@ function AnimatedRoutes() {
             <Route path="/progress" element={<Progress />} />
             <Route path="/library"  element={<ExerciseLibrary />} />
             <Route path="/wardrobe" element={<Wardrobe />} />
-            <Route path="/settings" element={<PlaceholderScreen name="Settings" />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="*"         element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
@@ -83,6 +75,7 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-navy">
         <AnimatedRoutes />
+        <A2HSPrompt />
       </div>
     </BrowserRouter>
   )
