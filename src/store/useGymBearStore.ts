@@ -3,8 +3,8 @@ import { persist } from 'zustand/middleware'
 
 // PRD Section 10 — Data Schema
 
-interface UserProfile {
-  goal: 'strength' | 'hypertrophy' | 'general' | null
+export interface UserProfile {
+  goal: 'strength' | 'hypertrophy' | 'general_fitness' | null
   gymDays: string[]          // e.g. ['monday','wednesday','friday']
   duration: 30 | 45 | 60 | null
   machineIncrements: {
@@ -17,7 +17,7 @@ interface UserProfile {
   createdAt: string | null
 }
 
-interface BrunoState {
+export interface BrunoState {
   level: number
   xp: number
   unlockedAccessories: string[]
@@ -47,7 +47,7 @@ interface GymBearStore {
 
   // App state
   isOnboarded: boolean
-  setOnboarded: (v: boolean) => void
+  setOnboarded: () => void
 }
 
 const defaultProfile: UserProfile = {
@@ -90,7 +90,7 @@ export const useGymBearStore = create<GymBearStore>()(
       },
 
       isOnboarded: false,
-      setOnboarded: (v) => set({ isOnboarded: v }),
+      setOnboarded: () => set({ isOnboarded: true }),
     }),
     {
       name: 'gymbear-store',
