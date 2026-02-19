@@ -1,0 +1,19 @@
+name = "gymbear-worker"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# PRD Section 6.5 — Cloudflare KV binding
+# KV namespace IDs are filled in after running: wrangler kv namespace create GYMBEAR_KV
+[[kv_namespaces]]
+binding = "GYMBEAR_KV"
+id = "e995f4d85a994d61a9c239deb5f6839b"
+preview_id = "8df7241e057249b39230d6357451f221"
+
+# PRD Section 6.2 — Cloudflare Workers AI binding
+[ai]
+binding = "AI"
+
+# PRD Section 6.3 — Groq fallback API key (set via: wrangler secret put GROQ_API_KEY)
+# [vars]
+# GROQ_API_KEY = ""   # DO NOT put secrets here — use: wrangler secret put GROQ_API_KEY
