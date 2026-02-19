@@ -9,6 +9,7 @@
  */
 
 import type { UserProfile, BrunoState } from '../store/useGymBearStore'
+export { todayISO } from './dates'
 
 // ── Key schema (PRD Section 10) ──────────────────────────────────────────────
 export const KV_KEYS = {

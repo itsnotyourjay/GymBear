@@ -5,6 +5,9 @@ import { setupSyncOnReconnect } from './lib/storage'
 import Onboarding from './pages/Onboarding'
 import PinLock from './pages/PinLock'
 import ExerciseLibrary from './pages/ExerciseLibrary'
+import Home from './pages/Home'
+import Workout from './pages/Workout'
+import History from './pages/History'
 
 // Placeholder for screens built in later phases
 function PlaceholderScreen({ name }: { name: string }) {
@@ -41,9 +44,9 @@ export default function App() {
           />
 
           {/* Main app screens */}
-          <Route path="/home"     element={<PlaceholderScreen name="Home Dashboard" />} />
-          <Route path="/workout"  element={<PlaceholderScreen name="Active Workout" />} />
-          <Route path="/history"  element={<PlaceholderScreen name="History" />} />
+          <Route path="/home"     element={<Home />} />
+          <Route path="/workout"  element={<Workout />} />
+          <Route path="/history"  element={<History />} />
           <Route path="/progress" element={<PlaceholderScreen name="Progress Hub" />} />
           <Route path="/library"  element={<ExerciseLibrary />} />
           <Route path="/wardrobe" element={<PlaceholderScreen name="Bruno Wardrobe" />} />
