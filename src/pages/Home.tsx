@@ -4,29 +4,21 @@ import { motion } from 'framer-motion'
 import { Flame, Zap, ChevronRight, Dumbbell } from 'lucide-react'
 import { useGymBearStore } from '../store/useGymBearStore'
 import { useWorkoutStore } from '../store/useWorkoutStore'
-import { generateStaticPlan } from '../lib/workoutPlanner'
+import { useAIPlan, useBrunoQuote } from '../hooks/useAIPlan'
 import { loadStreak, loadAllSessions } from '../lib/storage'
 import { isGymDay, todayDayName, DAY_LABELS, DAY_NAMES, type DayName } from '../lib/dates'
 import { getExerciseById, MUSCLE_GROUP_LABELS, type MuscleGroup } from '../data/exercises'
 import BottomNav from '../components/BottomNav'
 
-const BRUNO_QUOTES = [
-  "Let's get after it. Your future self is watching.",
-  "Progressive overload is the only cheat code.",
-  "Show up. That's 80% of the job done.",
-  "Rest days are gains days. But not today.",
-  "Every rep is a vote for the person you're becoming.",
-  "Soreness is weakness leaving the body. You'll be fine.",
-]
-
 export default function Home() {
   const navigate    = useNavigate()
   const userProfile = useGymBearStore((s) => s.userProfile)
-  const { plan, setPlan, isWorkoutActive } = useWorkoutStore()
+  const { isWorkoutActive }         = useWorkoutStore()
+  const { plan, loading: planLoading } = useAIPlan()
+  const quote                           = useBrunoQuote()
 
   const [streak, setStreak]     = useState({ current: 0, best: 0 })
   const [lastSession, setLast]  = useState<null | { date: string; exercises: string[] }>(null)
-  const [quote]                 = useState(() => BRUNO_QUOTES[Math.floor(Math.random() * BRUNO_QUOTES.length)])
 
   const gymDay = isGymDay(userProfile?.gymDays ?? [])
 
@@ -38,16 +30,6 @@ export default function Home() {
       setLast({ date, exercises: session.exercises as string[] })
     }
   }, [])
-
-  // Generate today's plan if not yet done
-  useEffect(() => {
-    if (!plan && userProfile && gymDay) {
-      const today = new Date().toISOString().split('T')[0]
-      if (!plan || (plan as { date?: string }).date !== today) {
-        setPlan(generateStaticPlan(userProfile))
-      }
-    }
-  }, [plan, userProfile, gymDay, setPlan])
 
   const nextGymDay = (() => {
     const gymDays = userProfile?.gymDays ?? []
@@ -124,7 +106,7 @@ export default function Home() {
               Today's Session
             </div>
             <div className="font-heading text-2xl text-off-white mb-1">
-              {muscleLabels || 'Loading plan…'}
+              {planLoading ? 'Building plan…' : (muscleLabels || 'Rest Day')}
             </div>
             {plan && (
               <div className="text-off-white/50 text-sm mb-4">
