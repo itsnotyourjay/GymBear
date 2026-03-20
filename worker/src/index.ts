@@ -14,6 +14,7 @@ export interface Env {
   GYMBEAR_KV: KVNamespace
   AI: Ai
   GROQ_API_KEY: string
+  VAPID_PRIVATE_KEY?: string
 }
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
@@ -112,6 +113,11 @@ interface PlanRequest {
     date:      string
     exercises: Array<{ id: string; lastWeight: number | null; lastReps: number | null }>
   }>
+  // §6.6 coach mode
+  mode?:             'plan' | 'coach'
+  profile?:          object
+  prs?:              object
+  insights?:         object[]
 }
 
 function buildUserPrompt(req: PlanRequest): string {
@@ -252,9 +258,34 @@ export default {
       }
     }
 
-    // Plan generation
+    // Plan generation  
     if (pathname === '/api/plan' && request.method === 'POST') {
       const req = await request.json() as PlanRequest
+
+      // ── Coach mode (§6.6) ─────────────────────────────────────────────────
+      if (req.mode === 'coach') {
+        try {
+          const coachSystemPrompt = `You are GymBear's AI coach. Analyse the user's training data and return 1-3 concise coaching insights.
+Output ONLY a JSON array of objects with: { type: "warning"|"suggestion"|"encouragement"|"milestone", message: string, exerciseId?: string }
+Keep each message under 20 words. No markdown, no prose outside JSON.`
+          const coachUserPrompt = `Profile: ${JSON.stringify(req.profile ?? {})}
+Recent sessions: ${JSON.stringify(req.recentSessions ?? [])}
+PRs: ${JSON.stringify(req.prs ?? {})}
+Existing insights: ${JSON.stringify(req.insights ?? [])}
+
+Return JSON array of 1-3 new insights.`
+
+          const raw = await callAI(env, coachSystemPrompt, coachUserPrompt)
+          const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim()
+          const match = cleaned.match(/\[[\s\S]*\]/)
+          if (!match) return json({ insights: [] })
+          const insights = JSON.parse(match[0])
+          return json({ insights })
+        } catch (e) {
+          console.error('[GymBear] Coach AI failed:', e)
+          return json({ insights: [] })
+        }
+      }
 
       // Return cached plan if already generated today
       const cacheKey = `plan:${req.date}`
@@ -286,6 +317,59 @@ export default {
       const quote = await generateQuote(env)
       await env.GYMBEAR_KV.put(cacheKey, quote, { expirationTtl: 60 * 60 * 24 })
       return json({ quote })
+    }
+
+    // Community challenge (§8.3)
+    if (pathname === '/api/challenge' && request.method === 'GET') {
+      const today    = new Date().toISOString().split('T')[0]
+      const cacheKey = `challenge:${today}`
+      const cached   = await env.GYMBEAR_KV.get(cacheKey, 'json')
+      if (cached) return json(cached)
+
+      // Generate a simple weekly challenge via AI
+      try {
+        const raw = await callAI(
+          env,
+          'You are GymBear coach. Generate a fun weekly gym challenge. Output ONLY JSON.',
+          `Generate a challenge JSON with: { id: string, title: string, description: string, targetCount: number, unit: string, endsAt: ISO-date-string (7 days from now), participantCount: number }`
+        )
+        const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim()
+        const match = cleaned.match(/\{[\s\S]*\}/)
+        if (!match) throw new Error('No JSON in response')
+        const challenge = JSON.parse(match[0])
+        challenge.endsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        challenge.participantCount = challenge.participantCount ?? Math.floor(Math.random() * 200) + 50
+        await env.GYMBEAR_KV.put(cacheKey, JSON.stringify(challenge), { expirationTtl: 60 * 60 * 24 })
+        return json(challenge)
+      } catch (e) {
+        // Fallback static challenge
+        const fallback = {
+          id: `challenge_${today}`,
+          title: '100 Reps Challenge',
+          description: 'Complete 100 total reps across any exercises in your next session',
+          targetCount: 100,
+          unit: 'reps',
+          endsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          participantCount: 127,
+        }
+        return json(fallback)
+      }
+    }
+
+    // Push subscription (§13.3)
+    if (pathname === '/api/push/subscribe' && request.method === 'POST') {
+      try {
+        const subscription = await request.json() as { endpoint: string; keys?: object }
+        if (!subscription.endpoint) return err('Missing endpoint', 400)
+        // Store subscription by endpoint hash (simplified)
+        const key = `push:${btoa(subscription.endpoint).slice(0, 32)}`
+        await env.GYMBEAR_KV.put(key, JSON.stringify(subscription), {
+          expirationTtl: 60 * 60 * 24 * 365,
+        })
+        return json({ ok: true })
+      } catch (e) {
+        return err('Invalid subscription data', 400)
+      }
     }
 
     return err('Not found', 404)

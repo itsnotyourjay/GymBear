@@ -1,7 +1,20 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { MuscleGroup, Equipment } from '../data/exercises'
 
 // PRD Section 10 — Data Schema
+
+export interface CustomExercise {
+  id: string
+  name: string
+  muscleGroup: MuscleGroup
+  equipment: Equipment | 'bodyweight' | 'barbell' | 'cable' | 'other'
+  tips: string
+  defaultSets: number
+  defaultReps: number
+  isCompound: boolean
+  isCustom: true
+}
 
 export interface UserProfile {
   goal: 'strength' | 'hypertrophy' | 'general_fitness' | null
@@ -33,6 +46,12 @@ export interface BrunoState {
     | 'rest-day'
     | 'loading'
     | 'level-up'
+    | 'ghost_race'
+    | 'champion'
+    | 'thinking'
+    | 'camera'
+    | 'tired'
+    | 'pumped'
 }
 
 // Accessory unlocked at each level
@@ -58,6 +77,11 @@ interface GymBearStore {
   setBrunoAnimation: (state: BrunoState['animationState']) => void
   setActiveAccessory: (accessory: string | null) => void
   addBrunoXP: (xp: number) => void
+
+  // Custom exercises
+  customExercises: CustomExercise[]
+  addCustomExercise: (ex: CustomExercise) => void
+  removeCustomExercise: (id: string) => void
 
   // App state
   isOnboarded: boolean
@@ -124,6 +148,12 @@ export const useGymBearStore = create<GymBearStore>()(
 
       isOnboarded: false,
       setOnboarded: () => set({ isOnboarded: true }),
+
+      customExercises: [],
+      addCustomExercise: (ex) =>
+        set((s) => ({ customExercises: [...s.customExercises, ex] })),
+      removeCustomExercise: (id) =>
+        set((s) => ({ customExercises: s.customExercises.filter((e) => e.id !== id) })),
     }),
     {
       name: 'gymbear-store',

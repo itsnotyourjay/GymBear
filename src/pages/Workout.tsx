@@ -6,8 +6,8 @@ import { ChevronLeft, Check, Minus, Plus, X, FileText } from 'lucide-react'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 import { useGymBearStore } from '../store/useGymBearStore'
 import { getExerciseById, MUSCLE_GROUP_LABELS } from '../data/exercises'
+import { haptics } from '../lib/haptics'
 import RestTimer from '../components/RestTimer'
-import SessionComplete from './SessionComplete'
 
 export default function Workout() {
   const navigate     = useNavigate()
@@ -60,12 +60,12 @@ export default function Workout() {
 
   if (!plan) {
     return (
-      <div className="min-h-screen bg-navy flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen mesh-bg flex flex-col items-center justify-center px-6">
         <div className="text-4xl mb-4">🐻</div>
-        <p className="text-off-white/60 mb-6">No workout plan for today.</p>
+        <p className="text-bear-muted mb-6">No workout plan for today.</p>
         <button
           onClick={() => navigate('/home')}
-          className="bg-red-elec text-off-white font-bold px-8 py-3 rounded-xl"
+          className="bg-gradient-to-r from-ember to-ember/70 text-white font-bold px-8 py-3 rounded-xl"
         >
           Back to Home
         </button>
@@ -74,7 +74,8 @@ export default function Workout() {
   }
 
   if (sessionDone && finishedSession) {
-    return <SessionComplete session={finishedSession} />
+    navigate('/session-complete')
+    return null
   }
 
   const exercises      = plan.exercises
@@ -103,64 +104,64 @@ export default function Workout() {
   })
 
   return (
-    <div className="min-h-screen bg-navy flex flex-col">
+    <div className="min-h-screen mesh-bg flex flex-col">
       {/* Top bar */}
-      <div className="px-5 pt-10 pb-3 flex items-center justify-between">
+      <div className="safe-top px-5 pt-11 pb-3 flex items-center justify-between">
         <button
           onClick={() => navigate('/home')}
-          className="w-10 h-10 rounded-xl bg-blue-dark/40 flex items-center justify-center"
+          className="w-10 h-10 rounded-xl bg-bear-surface border border-bear-rim/40
+            flex items-center justify-center"
         >
-          <ChevronLeft size={20} className="text-off-white" />
+          <ChevronLeft size={20} className="text-bear-text" />
         </button>
 
         <div className="text-center">
-          <div className="font-heading text-xl text-off-white tracking-wide">
+          <div className="font-display text-xl text-bear-bright tracking-wide">
             {exercise ? exercise.name.toUpperCase() : 'WORKOUT'}
           </div>
-          <div className="text-off-white/40 text-xs">
+          <div className="text-bear-muted text-xs">
             {currentExerciseIndex + 1} / {exercises.length}
           </div>
         </div>
 
-        {/* Session clock */}
-        <div className="bg-blue-dark/40 px-3 py-1.5 rounded-xl">
-          <span className="font-heading text-lg text-off-white">{formatTime(elapsed)}</span>
+        <div className="glass px-3 py-1.5 rounded-xl">
+          <span className="font-mono text-lg text-bear-bright">{formatTime(elapsed)}</span>
         </div>
       </div>
 
       {/* Progress bar */}
       <div className="px-5 mb-4">
-        <div className="h-1 bg-blue-dark/50 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-red-elec rounded-full transition-all duration-500"
-            style={{ width: `${((currentExerciseIndex + (allSetsForThis ? 1 : 0)) / exercises.length) * 100}%` }}
+        <div className="h-1 bg-bear-surface rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-ember to-plasma rounded-full"
+            animate={{ width: `${((currentExerciseIndex + (allSetsForThis ? 1 : 0)) / exercises.length) * 100}%` }}
+            transition={{ duration: 0.5 }}
           />
         </div>
       </div>
 
-      {/* Exercise info */}
+      {/* Exercise info / muscle chip */}
       {exercise && (
-        <div className="px-5 mb-4">
-          <div className="text-off-white/50 text-xs">
-            {MUSCLE_GROUP_LABELS[exercise.muscleGroup]} ·{' '}
+        <div className="px-5 mb-3 flex items-center gap-2">
+          <span className="px-2.5 py-1 rounded-full bg-plasma/20 border border-plasma/30 text-plasma text-xs">
+            {MUSCLE_GROUP_LABELS[exercise.muscleGroup]}
+          </span>
+          <span className="text-bear-muted text-xs">
             {exercise.isCompound ? '90s rest' : '60s rest'}
-          </div>
-          {exercise.tips && (
-            <p className="text-off-white/40 text-xs mt-1 italic">{exercise.tips}</p>
-          )}
+          </span>
         </div>
       )}
 
       {/* Rest timer (shown when active) */}
       {restTimerActive && (
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-4 px-5">
           <RestTimer />
         </div>
       )}
 
       {/* Sets table */}
       <div className="px-5 flex-1">
-        <div className="flex text-off-white/40 text-xs px-4 mb-2">
+        <div className="flex text-bear-muted text-xs px-4 mb-2">
           <span className="w-10">SET</span>
           <span className="flex-1 text-center">WEIGHT (kg)</span>
           <span className="flex-1 text-center">REPS</span>
@@ -181,6 +182,7 @@ export default function Workout() {
               completedReps={completedSets[setIndex]?.reps}
               isCurrent={setIndex === completedSets.length}
               onComplete={(weight, reps) => {
+                haptics.medium()
                 completeSet(currentExerciseIndex, weight, reps)
                 setBrunoAnimation('set-complete')
                 const isLast = setIndex + 1 >= targetSets
@@ -188,7 +190,6 @@ export default function Workout() {
                 startRestTimer(rest)
                 setTimeout(() => setBrunoAnimation('rest-timer'), 1200)
                 if (isLast) {
-                  // Auto-advance to next exercise after last set
                   setTimeout(() => {
                     if (currentExerciseIndex + 1 < exercises.length) {
                       setCurrentExerciseIndex(currentExerciseIndex + 1)
@@ -208,7 +209,7 @@ export default function Workout() {
         <button
           onClick={() => setCurrentExerciseIndex(Math.max(0, currentExerciseIndex - 1))}
           disabled={currentExerciseIndex === 0}
-          className="flex-1 py-3 bg-blue-dark/40 text-off-white/60 rounded-xl
+          className="flex-1 py-3 glass text-bear-muted rounded-xl
             disabled:opacity-30 font-medium text-sm"
         >
           ← Prev
@@ -217,51 +218,52 @@ export default function Workout() {
         {currentExerciseIndex < exercises.length - 1 ? (
           <button
             onClick={() => setCurrentExerciseIndex(currentExerciseIndex + 1)}
-            className="flex-1 py-3 bg-blue-dark/40 text-off-white font-medium text-sm rounded-xl"
+            className="flex-1 py-3 glass text-bear-text font-medium text-sm rounded-xl"
           >
             Next →
           </button>
         ) : (
-          <button
+          <motion.button
+            whileTap={{ scale: 0.96 }}
             onClick={handleFinish}
-            className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all
+            className={`flex-1 py-3 rounded-xl font-bold text-sm
               ${allExercisesDone
-                ? 'bg-red-elec text-off-white'
-                : 'bg-blue-dark/40 text-off-white/60'
+                ? 'bg-gradient-to-r from-ember to-ember/70 text-white'
+                : 'bg-bear-surface text-bear-muted'
               }`}
           >
             Finish ✓
-          </button>
+          </motion.button>
         )}
       </div>
 
-      {/* Note + exercise list strip */}
+      {/* Exercise scroll strip */}
       <div className="px-5 pb-8 flex items-center gap-3">
         <button
           onClick={() => setShowNote(!showNote)}
-          className="flex items-center gap-2 text-off-white/40 text-sm hover:text-off-white/70"
+          className="flex items-center gap-2 text-bear-muted text-sm"
         >
-          <FileText size={15} />
-          Note
+          <FileText size={15} /> Note
         </button>
-        <div className="flex-1 overflow-x-auto flex gap-2 pb-1 scrollbar-hide">
+        <div className="flex-1 overflow-x-auto flex gap-2 pb-1">
           {exercises.map((ex, i) => {
-            const exInfo   = getExerciseById(ex.exerciseId)
-            const done     = (activeSession?.exercises[i]?.completed.length ?? 0) >= ex.sets.length
+            const exInfo = getExerciseById(ex.exerciseId)
+            const done   = (activeSession?.exercises[i]?.completed.length ?? 0) >= ex.sets.length
             return (
-              <button
+              <motion.button
                 key={ex.exerciseId}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => setCurrentExerciseIndex(i)}
-                className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium transition-all
+                className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium
                   ${i === currentExerciseIndex
-                    ? 'bg-red-elec text-off-white'
+                    ? 'bg-gradient-to-r from-ember to-plasma text-white'
                     : done
-                    ? 'bg-neon-green/20 text-neon-green border border-neon-green/30'
-                    : 'bg-blue-dark/40 text-off-white/50'
+                    ? 'bg-neon/20 text-neon border border-neon/30'
+                    : 'bg-bear-surface text-bear-muted'
                   }`}
               >
                 {exInfo?.name.split(' ').slice(-1)[0] ?? ex.exerciseId}
-              </button>
+              </motion.button>
             )
           })}
         </div>
@@ -274,12 +276,12 @@ export default function Workout() {
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            className="fixed inset-x-0 bottom-0 bg-navy border-t border-blue-dark/60 p-6 z-50"
+            className="fixed inset-x-0 bottom-0 glass rounded-t-3xl p-6 z-50"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="font-bold text-off-white">Session Note</span>
+              <span className="font-bold text-bear-bright">Session Note</span>
               <button onClick={() => setShowNote(false)}>
-                <X size={20} className="text-off-white/50" />
+                <X size={20} className="text-bear-muted" />
               </button>
             </div>
             <textarea
@@ -290,9 +292,9 @@ export default function Workout() {
               }}
               placeholder="How did it go? Any PRs, injuries, energy level…"
               rows={4}
-              className="w-full bg-blue-dark/40 text-off-white placeholder-off-white/30
-                px-4 py-3 rounded-xl outline-none border border-transparent
-                focus:border-red-elec resize-none"
+              className="w-full bg-bear-surface text-bear-text placeholder-bear-muted
+                px-4 py-3 rounded-xl outline-none border border-bear-rim/50
+                focus:border-plasma/60 resize-none"
             />
           </motion.div>
         )}
@@ -328,12 +330,12 @@ function SetRow({
 
   if (isCompleted) {
     return (
-      <div className="flex items-center px-4 py-3 rounded-2xl bg-neon-green/10 border border-neon-green/20">
-        <span className="w-10 text-neon-green/70 text-sm">{setNumber}</span>
-        <span className="flex-1 text-center text-off-white font-bold text-lg">{completedWeight}</span>
-        <span className="flex-1 text-center text-off-white font-bold text-lg">{completedReps}</span>
+      <div className="flex items-center px-4 py-3 rounded-2xl glass border-l-2 border-neon/60">
+        <span className="w-10 text-neon/70 text-sm">{setNumber}</span>
+        <span className="flex-1 text-center text-bear-text font-mono text-lg">{completedWeight}</span>
+        <span className="flex-1 text-center text-bear-text font-mono text-lg">{completedReps}</span>
         <button onClick={onUndo} className="w-10 flex justify-center">
-          <X size={16} className="text-off-white/30 hover:text-red-elec" />
+          <X size={16} className="text-bear-muted" />
         </button>
       </div>
     )
@@ -341,10 +343,10 @@ function SetRow({
 
   if (!isCurrent) {
     return (
-      <div className="flex items-center px-4 py-3 rounded-2xl bg-blue-dark/20 opacity-40">
-        <span className="w-10 text-off-white/40 text-sm">{setNumber}</span>
-        <span className="flex-1 text-center text-off-white/40">{defaultWeight ?? '—'}</span>
-        <span className="flex-1 text-center text-off-white/40">{defaultReps}</span>
+      <div className="flex items-center px-4 py-3 rounded-2xl bg-bear-surface/40 opacity-40">
+        <span className="w-10 text-bear-muted text-sm">{setNumber}</span>
+        <span className="flex-1 text-center text-bear-muted">{defaultWeight ?? '—'}</span>
+        <span className="flex-1 text-center text-bear-muted">{defaultReps}</span>
         <span className="w-10" />
       </div>
     )
@@ -355,60 +357,80 @@ function SetRow({
     <motion.div
       initial={{ scale: 0.97 }}
       animate={{ scale: 1 }}
-      className="flex items-center px-4 py-3 rounded-2xl bg-blue-dark/50 border border-red-elec/30"
+      className="flex items-center px-4 py-3 rounded-2xl glass border-l-2 border-ember"
     >
-      <span className="w-10 text-red-elec font-bold">{setNumber}</span>
+      <span className="w-10 text-ember font-bold">{setNumber}</span>
 
       {/* Weight stepper */}
       <div className="flex-1 flex items-center justify-center gap-2">
-        <button
-          onClick={() => setWeight((w) => Math.max(0, Math.round((w - 2.5) * 10) / 10))}
-          className="w-8 h-8 rounded-lg bg-blue-dark flex items-center justify-center"
+        <motion.button
+          whileTap={{ scale: 0.85 }}
+          onClick={() => { setWeight((w) => Math.max(0, Math.round((w - 2.5) * 10) / 10)); haptics.light() }}
+          className="w-9 h-9 rounded-xl bg-bear-surface border border-bear-rim/50 flex items-center justify-center"
         >
-          <Minus size={14} className="text-off-white" />
-        </button>
-        <span className="font-heading text-2xl text-off-white min-w-[52px] text-center">
-          {weight}
-        </span>
-        <button
-          onClick={() => setWeight((w) => Math.round((w + 2.5) * 10) / 10)}
-          className="w-8 h-8 rounded-lg bg-blue-dark flex items-center justify-center"
+          <Minus size={14} className="text-bear-text" />
+        </motion.button>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={weight}
+            initial={{ y: 6, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -6, opacity: 0 }}
+            transition={{ duration: 0.12 }}
+            className="font-mono text-2xl text-bear-bright min-w-[52px] text-center"
+          >
+            {weight}
+          </motion.span>
+        </AnimatePresence>
+        <motion.button
+          whileTap={{ scale: 0.85 }}
+          onClick={() => { setWeight((w) => Math.round((w + 2.5) * 10) / 10); haptics.light() }}
+          className="w-9 h-9 rounded-xl bg-bear-surface border border-bear-rim/50 flex items-center justify-center"
         >
-          <Plus size={14} className="text-off-white" />
-        </button>
+          <Plus size={14} className="text-bear-text" />
+        </motion.button>
       </div>
 
       {/* Reps stepper */}
       <div className="flex-1 flex items-center justify-center gap-2">
-        <button
-          onClick={() => setReps((r) => Math.max(1, r - 1))}
-          className="w-8 h-8 rounded-lg bg-blue-dark flex items-center justify-center"
+        <motion.button
+          whileTap={{ scale: 0.85 }}
+          onClick={() => { setReps((r) => Math.max(1, r - 1)); haptics.light() }}
+          className="w-9 h-9 rounded-xl bg-bear-surface border border-bear-rim/50 flex items-center justify-center"
         >
-          <Minus size={14} className="text-off-white" />
-        </button>
-        <span className="font-heading text-2xl text-off-white min-w-[32px] text-center">
-          {reps}
-        </span>
-        <button
-          onClick={() => setReps((r) => r + 1)}
-          className="w-8 h-8 rounded-lg bg-blue-dark flex items-center justify-center"
+          <Minus size={14} className="text-bear-text" />
+        </motion.button>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={reps}
+            initial={{ y: 6, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -6, opacity: 0 }}
+            transition={{ duration: 0.12 }}
+            className="font-mono text-2xl text-bear-bright min-w-[32px] text-center"
+          >
+            {reps}
+          </motion.span>
+        </AnimatePresence>
+        <motion.button
+          whileTap={{ scale: 0.85 }}
+          onClick={() => { setReps((r) => r + 1); haptics.light() }}
+          className="w-9 h-9 rounded-xl bg-bear-surface border border-bear-rim/50 flex items-center justify-center"
         >
-          <Plus size={14} className="text-off-white" />
-        </button>
+          <Plus size={14} className="text-bear-text" />
+        </motion.button>
       </div>
 
       {/* Complete button */}
-      <button
+      <motion.button
+        whileTap={{ scale: 0.8 }}
         onClick={() => onComplete(weight, reps)}
         className="w-10 flex justify-center"
       >
-        <motion.div
-          whileTap={{ scale: 0.8 }}
-          className="w-9 h-9 rounded-xl bg-red-elec flex items-center justify-center"
-        >
-          <Check size={18} className="text-off-white" />
-        </motion.div>
-      </button>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-ember to-plasma flex items-center justify-center">
+          <Check size={18} className="text-white" />
+        </div>
+      </motion.button>
     </motion.div>
   )
 }

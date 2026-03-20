@@ -25,8 +25,8 @@ export default function Bruno({ state, accessory, size = 120 }: Props) {
   const rArmCtrl = useAnimation()
 
   const isRestDay = state === 'rest-day'
-  const isExcited = state === 'pr-achieved' || state === 'session-complete' || state === 'level-up'
-  const isSetDone = state === 'set-complete'
+  const isExcited = state === 'pr-achieved' || state === 'session-complete' || state === 'level-up' || state === 'champion'
+  const isSetDone = state === 'set-complete' || state === 'pumped'
 
   useEffect(() => {
     bodyCtrl.stop()
@@ -107,6 +107,42 @@ export default function Bruno({ state, accessory, size = 120 }: Props) {
           lArmCtrl.start({ rotate: 0 })
           rArmCtrl.start({ rotate: 0 })
         }, 1900)
+        break
+
+      case 'ghost_race':
+        bodyCtrl.start({ x: [0, 6, -6, 6, 0], y: [0, -5, 0], transition: { repeat: Infinity, duration: 0.55 } })
+        lArmCtrl.start({ rotate: [0, -70, 0], transition: { repeat: Infinity, duration: 0.55, delay: 0.27 } })
+        rArmCtrl.start({ rotate: [0, 70, 0],  transition: { repeat: Infinity, duration: 0.55 } })
+        break
+
+      case 'champion':
+        bodyCtrl.start({ scale: [1, 1.18, 1], transition: { duration: 0.5 } }).then(goIdle)
+        lArmCtrl.start({ rotate: -130, transition: { duration: 0.25 } })
+        rArmCtrl.start({ rotate: 130,  transition: { duration: 0.25 } })
+        break
+
+      case 'thinking':
+        bodyCtrl.start({ rotate: [0, 3, -3, 0], transition: { repeat: Infinity, duration: 3, ease: 'easeInOut' } })
+        lArmCtrl.start({ rotate: 0, transition: { duration: 0.4 } })
+        rArmCtrl.start({ rotate: -40, transition: { duration: 0.5 } })
+        break
+
+      case 'camera':
+        bodyCtrl.start({ y: [0, -3, 0], transition: { repeat: Infinity, duration: 2, ease: 'easeInOut' } })
+        lArmCtrl.start({ rotate: -20, transition: { duration: 0.4 } })
+        rArmCtrl.start({ rotate: -65, transition: { duration: 0.4 } })
+        break
+
+      case 'tired':
+        bodyCtrl.start({ rotate: 12, y: 8, transition: { duration: 1.2, ease: 'easeOut' } })
+        lArmCtrl.start({ rotate: 30, transition: { duration: 1.2 } })
+        rArmCtrl.start({ rotate: -30, transition: { duration: 1.2 } })
+        break
+
+      case 'pumped':
+        bodyCtrl.start({ scale: [1, 1.10, 1], transition: { repeat: Infinity, duration: 0.6 } })
+        lArmCtrl.start({ rotate: [-110, -90, -110], transition: { repeat: Infinity, duration: 0.6 } })
+        rArmCtrl.start({ rotate: [110, 90, 110],    transition: { repeat: Infinity, duration: 0.6 } })
         break
     }
   }, [state]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -233,6 +269,59 @@ export default function Bruno({ state, accessory, size = 120 }: Props) {
             <rect x="2" y="108" width="20" height="15" rx="4" fill="#0F3460" />
             <path d="M7 108 Q12 102 17 108" stroke="#0F3460" strokeWidth="3" fill="none" />
             <line x1="4"  y1="116" x2="20" y2="116" stroke="#1A5090" strokeWidth="1.5" />
+          </g>
+        )}
+
+        {/* New accessories — Enhancement §11 */}
+        {accessory === 'ghost_trail' && (
+          <g opacity="0.6">
+            {[0.8, 0.5, 0.25].map((op, i) => (
+              <motion.ellipse
+                key={i}
+                cx={60 + (i + 1) * 14}
+                cy={70}
+                rx={14 - i * 3}
+                ry={20 - i * 4}
+                fill="#7B5EFF"
+                opacity={op}
+                animate={{ opacity: [op, 0, op] }}
+                transition={{ repeat: Infinity, duration: 1.0, delay: i * 0.2 }}
+              />
+            ))}
+          </g>
+        )}
+        {accessory === 'trophy_belt' && (
+          <g>
+            <rect x="24" y="110" width="72" height="12" rx="4" fill="#FFD700" />
+            <rect x="48" y="107" width="24" height="18" rx="4" fill="#FFD700" />
+            <circle cx="60" cy="116" r="6" fill="#DAA520" />
+            <text x="57" y="120" fill="white" fontSize="7" fontWeight="bold">★</text>
+          </g>
+        )}
+        {accessory === 'form_coach_glasses' && (
+          <g>
+            <rect x="33" y="41" width="20" height="14" rx="7" fill="none" stroke="#00FFC2" strokeWidth="2" />
+            <rect x="67" y="41" width="20" height="14" rx="7" fill="none" stroke="#00FFC2" strokeWidth="2" />
+            <line x1="53" y1="48" x2="67" y2="48" stroke="#00FFC2" strokeWidth="1.5" />
+            <circle cx="43" cy="48" r="3" fill="#00FFC2" opacity="0.4" />
+            <circle cx="77" cy="48" r="3" fill="#00FFC2" opacity="0.4" />
+          </g>
+        )}
+        {accessory === 'challenge_crown' && (
+          <g>
+            <path d="M30 20 L38 2 L52 14 L60 0 L68 14 L82 2 L90 20 Z" fill="#FFD700" />
+            <circle cx="60" cy="6"  r="3" fill="#FF3D5A" />
+            <circle cx="38" cy="7"  r="2" fill="#7B5EFF" />
+            <circle cx="82" cy="7"  r="2" fill="#7B5EFF" />
+          </g>
+        )}
+        {accessory === 'grind_headphones' && (
+          <g>
+            <path d="M28 38 Q32 15 60 15 Q88 15 92 38" stroke="#1A1A2E" strokeWidth="5" fill="none" strokeLinecap="round" />
+            <rect x="22" y="34" width="12" height="18" rx="6" fill="#1A1A2E" />
+            <rect x="86" y="34" width="12" height="18" rx="6" fill="#1A1A2E" />
+            <rect x="24" y="36" width="8" height="14" rx="4" fill="#FF3D5A" opacity="0.8" />
+            <rect x="88" y="36" width="8" height="14" rx="4" fill="#FF3D5A" opacity="0.8" />
           </g>
         )}
 

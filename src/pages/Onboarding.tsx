@@ -5,11 +5,12 @@ import { ChevronRight, ChevronLeft, Check } from 'lucide-react'
 import { useGymBearStore } from '../store/useGymBearStore'
 import { saveUserProfile } from '../lib/storage'
 import { hashPIN } from '../lib/pin'
-import type { UserProfile } from '../store/useGymBearStore'
+import type { UserProfile, BrunoState } from '../store/useGymBearStore'
 import { DAY_NAMES, DAY_LABELS, type DayName } from '../lib/dates'
+import Bruno from '../components/Bruno'
 
 // ── Step configuration ────────────────────────────────────────────────────────
-const TOTAL_STEPS = 5
+const TOTAL_STEPS = 6
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function Onboarding() {
@@ -36,6 +37,7 @@ export default function Onboarding() {
     if (step === 3) return true
     if (step === 4) return true
     if (step === 5) return pin.length >= 4 && pin === pinConfirm
+    if (step === 6) return true
     return false
   }
 
@@ -43,7 +45,7 @@ export default function Onboarding() {
     if (step < TOTAL_STEPS) {
       setStep((s) => s + 1)
     } else {
-      handleFinish()
+      void handleFinish()
     }
   }
 
@@ -160,6 +162,9 @@ export default function Onboarding() {
                 error={pinError}
                 onKey={handlePinKey}
               />
+            )}
+            {step === 6 && (
+              <StepBruno />
             )}
           </motion.div>
         </AnimatePresence>
@@ -362,7 +367,60 @@ function StepIncrements({
   )
 }
 
-// ── Step 5 — PIN Setup ────────────────────────────────────────────────────────
+// ── Step 6 — Meet Bruno ───────────────────────────────────────────────────────
+const ACCESSORIES: Array<{ id: string; label: string }> = [
+  { id: 'sunglasses', label: 'Sunglasses' },
+  { id: 'headband', label: 'Headband' },
+  { id: 'gold_chain', label: 'Gold Chain' },
+  { id: 'grind_headphones', label: 'Headphones' },
+  { id: 'challenge_crown', label: 'Crown' },
+]
+
+function StepBruno() {
+  const [preview, setPreview] = useState<string | null>(null)
+  const brunoState: BrunoState['animationState'] = 'champion'
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      <h1 className="font-display text-4xl text-bear-bright mb-2 tracking-wide">MEET BRUNO</h1>
+      <p className="text-bear-muted mb-6 text-sm leading-relaxed">
+        Your personal gym bear. He grows stronger as you do — earn XP, level up, and unlock accessories.
+      </p>
+
+      {/* Bruno preview */}
+      <motion.div
+        animate={{ y: [0, -10, 0] }}
+        transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+        className="mb-6"
+      >
+        <Bruno state={brunoState} accessory={preview} size={140} />
+      </motion.div>
+
+      {/* Accessory preview chips */}
+      <p className="text-bear-muted text-xs uppercase tracking-wider mb-3">Preview accessories</p>
+      <div className="flex flex-wrap justify-center gap-2 mb-4">
+        {ACCESSORIES.map((a) => (
+          <button
+            key={a.id}
+            onClick={() => setPreview(preview === a.id ? null : a.id)}
+            className={`px-3 py-1.5 rounded-xl text-xs transition-colors ${
+              preview === a.id
+                ? 'bg-ember text-white'
+                : 'bg-bear-surface border border-bear-rim/40 text-bear-muted'
+            }`}
+          >
+            {a.label}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-bear-muted/60 text-xs">
+        Unlock accessories at levels 2, 3, 4, 5… keep grinding!
+      </p>
+    </div>
+  )
+}
+
 const KEYPAD = [
   ['1', '2', '3'],
   ['4', '5', '6'],
