@@ -21,14 +21,15 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 px-2"
-      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
+      className="fixed bottom-0 left-0 right-0 z-50 px-4"
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
     >
       <div
-        className="glass mx-auto max-w-lg flex items-center justify-around"
+        className="glass mx-auto max-w-lg flex items-center justify-around overflow-hidden relative"
         style={{
-          height: 68,
-          boxShadow: '0 0 24px rgba(123,94,255,0.20), 0 0 60px rgba(123,94,255,0.08)',
+          height: 72,
+          borderRadius: '36px',
+          boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)',
         }}
       >
         {NAV_ITEMS.map(({ path, Icon, label }, idx) => {
@@ -37,31 +38,32 @@ export default function BottomNav() {
             <motion.button
               key={path}
               onClick={() => navigate(path)}
-              className="relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
-              whileTap={{ scale: 0.85 }}
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: idx * 0.06, type: 'spring', stiffness: 300, damping: 20 }}
+              className="relative flex flex-col items-center justify-center gap-1 flex-1 h-full z-10"
+              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.04, type: 'spring', stiffness: 400, damping: 25 }}
             >
-              {/* Active indicator pill */}
+              {/* Active physical indicator pill behind icon */}
               {active && (
                 <motion.div
                   layoutId="navIndicator"
-                  className="absolute top-1.5 w-8 h-1 rounded-full bg-ember"
-                  style={{ boxShadow: '0 0 10px rgba(255,61,90,0.60)' }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  className="absolute inset-y-2 inset-x-3 rounded-full bg-white/10"
+                  style={{ backdropFilter: 'blur(8px)' }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
 
-              {/* Icon with bounce when active */}
+              {/* Icon */}
               <motion.div
-                animate={active ? { y: [0, -4, 0] } : { y: 0 }}
-                transition={{ duration: 0.25, type: 'spring', stiffness: 400, damping: 15 }}
+                animate={active ? { y: -2, scale: 1.1 } : { y: 0, scale: 1 }}
+                transition={{ duration: 0.3, type: 'spring', stiffness: 400, damping: 20 }}
+                className="relative z-10"
               >
                 <Icon
-                  size={22}
-                  strokeWidth={active ? 2.5 : 1.75}
-                  className={active ? 'text-ember' : 'text-bear-muted'}
+                  size={24}
+                  strokeWidth={active ? 2.5 : 1.5}
+                  className={active ? 'text-white' : 'text-bear-text/60'}
                 />
               </motion.div>
 
@@ -70,13 +72,13 @@ export default function BottomNav() {
                 {active && (
                   <motion.span
                     key="label"
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 4 }}
-                    transition={{ duration: 0.15 }}
-                    className="text-[9px] font-display tracking-wider text-ember leading-none"
+                    initial={{ opacity: 0, scale: 0.8, y: 4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: 4 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="text-[10px] font-medium tracking-wide text-white leading-none z-10"
                   >
-                    {label.toUpperCase()}
+                    {label}
                   </motion.span>
                 )}
               </AnimatePresence>

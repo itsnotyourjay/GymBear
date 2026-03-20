@@ -1,9 +1,7 @@
-/* ─────────────────────────────────────────────────────────────────
-   GymBear Global Theme — Enhancement §1.2
-   Import this ONCE at the top of src/main.tsx
-   ───────────────────────────────────────────────────────────────── */
+/* -----------------------------------------------------------------
+   GymBear Global Theme
+   ----------------------------------------------------------------- */
 
-/* ── Typography imports ────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
 :root {
@@ -11,7 +9,6 @@
   --font-body:    'Space Grotesk', sans-serif;
   --font-mono:    'JetBrains Mono', monospace;
 
-  /* Theme accent variables (changed per theme selection) */
   --accent-primary:   #FF3D5A;
   --accent-secondary: #7B5EFF;
   --accent-neon:      #00F5C4;
@@ -20,7 +17,6 @@
   --bg-surface:       #1A1A3E;
 }
 
-/* Ember theme overrides */
 [data-theme="ember"] {
   --accent-primary:   #FF6B35;
   --accent-secondary: #FF3D5A;
@@ -29,7 +25,6 @@
   --bg-surface:       #2A1A12;
 }
 
-/* Ghost theme overrides */
 [data-theme="ghost"] {
   --accent-primary:   #9898E8;
   --accent-secondary: #6868C8;
@@ -38,7 +33,7 @@
   --bg-surface:       #10101C;
 }
 
-/* ── Base ───────────────────────────────────────────────────────── */
+/* -- Base ---------------------------------------------------------- */
 body {
   font-family: var(--font-body);
   background: var(--bg-void);
@@ -51,54 +46,59 @@ h1, h2, h3 {
   letter-spacing: 0.04em;
 }
 
-/* ── Noise grain overlay (subtle texture) ───────────────────────── */
+/* -- Noise grain texture -------------------------------------------- */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.04;
+  opacity: 0.055;
+  mix-blend-mode: overlay;
 }
 
-/* ── Custom scrollbar ───────────────────────────────────────────── */
+/* -- Custom scrollbar ----------------------------------------------- */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #3A3A7A; border-radius: 99px; }
 
-/* ── Glassmorphism card ─────────────────────────────────────────── */
+/* -- Apple-like Glass Material -------------------------------------- */
 .glass {
-  background: rgba(18, 18, 42, 0.72);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border: 1px solid rgba(123, 94, 255, 0.18);
+  background: rgba(20, 20, 28, 0.65);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* ── Glow utilities ─────────────────────────────────────────────── */
+/* -- Glow utilities ------------------------------------------------- */
 .glow-ember  { box-shadow: 0 0 24px rgba(255,61,90,0.40),   0 0 60px rgba(255,61,90,0.12); }
 .glow-plasma { box-shadow: 0 0 24px rgba(123,94,255,0.40),  0 0 60px rgba(123,94,255,0.12); }
 .glow-neon   { box-shadow: 0 0 24px rgba(0,245,196,0.40),   0 0 60px rgba(0,245,196,0.12); }
 .glow-gold   { box-shadow: 0 0 20px rgba(255,215,0,0.45); }
 
-/* ── Mesh gradient background ───────────────────────────────────── */
+/* -- Solid dark base ------------------------------------------------- */
 .mesh-bg {
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 10%,  rgba(123,94,255,0.14) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 80%,  rgba(255,61,90,0.10)  0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(0,245,196,0.06)  0%, transparent 70%),
-    #090912;
+  background: var(--bg-void);
 }
 
-/* ── Tap highlight removal ──────────────────────────────────────── */
+/* -- Tap highlight removal ------------------------------------------- */
 * { -webkit-tap-highlight-color: transparent; }
 
-/* ── Safe area padding ──────────────────────────────────────────── */
+/* -- Safe area helpers ----------------------------------------------- */
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 .safe-top    { padding-top:    env(safe-area-inset-top); }
+.pt-safe     { padding-top:    max(env(safe-area-inset-top), 20px); }
+.pb-safe     { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
 
-/* ── Skeleton shimmer loader ────────────────────────────────────── */
+/* -- Hide scrollbar utility ------------------------------------------ */
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+/* -- Skeleton shimmer ------------------------------------------------ */
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
@@ -110,7 +110,7 @@ body::before {
   border-radius: 12px;
 }
 
-/* ── PR shimmer card ────────────────────────────────────────────── */
+/* -- PR shimmer card ------------------------------------------------- */
 @keyframes goldShimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
@@ -121,7 +121,7 @@ body::before {
   animation: goldShimmer 2s infinite;
 }
 
-/* ── Streak pulse ring ──────────────────────────────────────────── */
+/* -- Streak pulse ring ----------------------------------------------- */
 @keyframes streakPing {
   0%   { transform: scale(1);   opacity: 0.6; }
   100% { transform: scale(1.8); opacity: 0;   }

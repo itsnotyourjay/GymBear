@@ -60,12 +60,12 @@ export default function Workout() {
 
   if (!plan) {
     return (
-      <div className="min-h-screen mesh-bg flex flex-col items-center justify-center px-6">
-        <div className="text-4xl mb-4">🐻</div>
-        <p className="text-bear-muted mb-6">No workout plan for today.</p>
+      <div className="min-h-screen mesh-bg flex flex-col items-center justify-center px-6 text-center">
+        <div className="text-4xl mb-6">🐻</div>
+        <p className="text-white/60 mb-8 font-medium">No workout plan for today.</p>
         <button
           onClick={() => navigate('/home')}
-          className="bg-gradient-to-r from-ember to-ember/70 text-white font-bold px-8 py-3 rounded-xl"
+          className="bg-white text-black font-semibold px-8 py-3.5 rounded-2xl shadow-lg active:scale-95 transition-transform"
         >
           Back to Home
         </button>
@@ -104,49 +104,52 @@ export default function Workout() {
   })
 
   return (
-    <div className="min-h-screen mesh-bg flex flex-col">
+    <div className="min-h-screen mesh-bg flex flex-col pb-safe">
       {/* Top bar */}
-      <div className="safe-top px-5 pt-11 pb-3 flex items-center justify-between">
+      <div 
+        className="px-5 pb-4 flex items-center justify-between bg-[rgba(9,9,18,0.7)] backdrop-blur-2xl border-b border-white/5 sticky top-0 z-50 saturate-[1.8]"
+        style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}
+      >
         <button
           onClick={() => navigate('/home')}
-          className="w-10 h-10 rounded-xl bg-bear-surface border border-bear-rim/40
-            flex items-center justify-center"
+          className="w-11 h-11 rounded-full glass border border-white/10
+            flex items-center justify-center active:scale-90 transition-transform"
         >
-          <ChevronLeft size={20} className="text-bear-text" />
+          <ChevronLeft size={22} className="text-white/80" />
         </button>
 
         <div className="text-center">
-          <div className="font-display text-xl text-bear-bright tracking-wide">
+          <div className="font-display text-2xl text-white tracking-wider">
             {exercise ? exercise.name.toUpperCase() : 'WORKOUT'}
           </div>
-          <div className="text-bear-muted text-xs">
-            {currentExerciseIndex + 1} / {exercises.length}
+          <div className="text-white/50 text-xs font-medium tracking-widest mt-0.5">
+            {currentExerciseIndex + 1} OF {exercises.length}
           </div>
         </div>
 
-        <div className="glass px-3 py-1.5 rounded-xl">
-          <span className="font-mono text-lg text-bear-bright">{formatTime(elapsed)}</span>
+        <div className="glass px-3.5 py-1.5 rounded-full border border-white/10">
+          <span className="font-mono text-lg text-white font-medium">{formatTime(elapsed)}</span>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="px-5 mb-4">
-        <div className="h-1 bg-bear-surface rounded-full overflow-hidden">
+      <div className="px-6 mb-5 mt-4">
+        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden shadow-inner">
           <motion.div
-            className="h-full bg-gradient-to-r from-ember to-plasma rounded-full"
+            className="h-full bg-white rounded-full"
             animate={{ width: `${((currentExerciseIndex + (allSetsForThis ? 1 : 0)) / exercises.length) * 100}%` }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6, type: 'spring', bounce: 0.2 }}
           />
         </div>
       </div>
 
       {/* Exercise info / muscle chip */}
       {exercise && (
-        <div className="px-5 mb-3 flex items-center gap-2">
-          <span className="px-2.5 py-1 rounded-full bg-plasma/20 border border-plasma/30 text-plasma text-xs">
+        <div className="px-6 mb-4 flex items-center gap-2">
+          <span className="px-3 py-1.5 rounded-md bg-white/10 border border-white/10 text-white font-medium text-xs">
             {MUSCLE_GROUP_LABELS[exercise.muscleGroup]}
           </span>
-          <span className="text-bear-muted text-xs">
+          <span className="text-white/40 text-xs font-medium px-2 border-l border-white/10">
             {exercise.isCompound ? '90s rest' : '60s rest'}
           </span>
         </div>
@@ -160,57 +163,58 @@ export default function Workout() {
       )}
 
       {/* Sets table */}
-      <div className="px-5 flex-1">
-        <div className="flex text-bear-muted text-xs px-4 mb-2">
+      <div className="px-6 flex-1">
+        <div className="flex text-white/40 text-[11px] font-semibold tracking-widest px-4 mb-3 border-b border-white/10 pb-2">
           <span className="w-10">SET</span>
-          <span className="flex-1 text-center">WEIGHT (kg)</span>
+          <span className="flex-1 text-center">WEIGHT (KG)</span>
           <span className="flex-1 text-center">REPS</span>
           <span className="w-10 text-center">✓</span>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {Array.from({ length: targetSets }).map((_, setIndex) => (
-            <SetRow
-              key={setIndex}
-              setNumber={setIndex + 1}
-              isCompleted={setIndex < completedSets.length}
-              defaultWeight={currentEx?.sets[setIndex]?.targetWeight ?? undefined}
-              defaultReps={currentEx?.sets[setIndex]?.targetReps ?? 10}
-              lastWeight={completedSets[setIndex - 1]?.weight}
-              lastReps={completedSets[setIndex - 1]?.reps}
-              completedWeight={completedSets[setIndex]?.weight}
-              completedReps={completedSets[setIndex]?.reps}
-              isCurrent={setIndex === completedSets.length}
-              onComplete={(weight, reps) => {
-                haptics.medium()
-                completeSet(currentExerciseIndex, weight, reps)
-                setBrunoAnimation('set-complete')
-                const isLast = setIndex + 1 >= targetSets
-                const rest = currentEx?.restSeconds ?? 60
-                startRestTimer(rest)
-                setTimeout(() => setBrunoAnimation('rest-timer'), 1200)
-                if (isLast) {
-                  setTimeout(() => {
-                    if (currentExerciseIndex + 1 < exercises.length) {
-                      setCurrentExerciseIndex(currentExerciseIndex + 1)
-                    }
-                  }, rest * 1000 + 200)
-                }
-              }}
-              onUndo={() => undoLastSet(currentExerciseIndex)}
-              machineIncrements={userProfile?.machineIncrements}
-            />
+            <div key={setIndex} className="glass rounded-2xl border border-white/5 shadow-sm overflow-hidden">
+              <SetRow
+                setNumber={setIndex + 1}
+                isCompleted={setIndex < completedSets.length}
+                defaultWeight={currentEx?.sets[setIndex]?.targetWeight ?? undefined}
+                defaultReps={currentEx?.sets[setIndex]?.targetReps ?? 10}
+                lastWeight={completedSets[setIndex - 1]?.weight}
+                lastReps={completedSets[setIndex - 1]?.reps}
+                completedWeight={completedSets[setIndex]?.weight}
+                completedReps={completedSets[setIndex]?.reps}
+                isCurrent={setIndex === completedSets.length}
+                onComplete={(weight, reps) => {
+                  haptics.medium()
+                  completeSet(currentExerciseIndex, weight, reps)
+                  setBrunoAnimation('set-complete')
+                  const isLast = setIndex + 1 >= targetSets
+                  const rest = currentEx?.restSeconds ?? 60
+                  startRestTimer(rest)
+                  setTimeout(() => setBrunoAnimation('rest-timer'), 1200)
+                  if (isLast) {
+                    setTimeout(() => {
+                      if (currentExerciseIndex + 1 < exercises.length) {
+                        setCurrentExerciseIndex(currentExerciseIndex + 1)
+                      }
+                    }, rest * 1000 + 200)
+                  }
+                }}
+                onUndo={() => undoLastSet(currentExerciseIndex)}
+                machineIncrements={userProfile?.machineIncrements}
+              />
+            </div>
           ))}
         </div>
       </div>
 
       {/* Exercise navigation */}
-      <div className="px-5 py-4 flex items-center justify-between gap-3">
+      <div className="px-6 py-6 flex items-center justify-between gap-4">
         <button
           onClick={() => setCurrentExerciseIndex(Math.max(0, currentExerciseIndex - 1))}
           disabled={currentExerciseIndex === 0}
-          className="flex-1 py-3 glass text-bear-muted rounded-xl
-            disabled:opacity-30 font-medium text-sm"
+          className="flex-1 py-4 bg-white/5 border border-white/10 text-white/80 rounded-2xl
+            disabled:opacity-30 font-semibold text-sm active:bg-white/10 transition-colors"
         >
           ← Prev
         </button>
@@ -218,7 +222,7 @@ export default function Workout() {
         {currentExerciseIndex < exercises.length - 1 ? (
           <button
             onClick={() => setCurrentExerciseIndex(currentExerciseIndex + 1)}
-            className="flex-1 py-3 glass text-bear-text font-medium text-sm rounded-xl"
+            className="flex-1 py-4 bg-white text-black font-bold text-sm rounded-2xl shadow-md active:scale-95 transition-transform"
           >
             Next →
           </button>
@@ -226,10 +230,10 @@ export default function Workout() {
           <motion.button
             whileTap={{ scale: 0.96 }}
             onClick={handleFinish}
-            className={`flex-1 py-3 rounded-xl font-bold text-sm
+            className={`flex-1 py-4 rounded-2xl font-bold text-sm shadow-md
               ${allExercisesDone
-                ? 'bg-gradient-to-r from-ember to-ember/70 text-white'
-                : 'bg-bear-surface text-bear-muted'
+                ? 'bg-white text-black'
+                : 'bg-white/10 text-white/50 border border-white/10'
               }`}
           >
             Finish ✓
@@ -238,28 +242,28 @@ export default function Workout() {
       </div>
 
       {/* Exercise scroll strip */}
-      <div className="px-5 pb-8 flex items-center gap-3">
+      <div className="px-6 safe-bottom mb-10 flex items-center gap-4 pt-2">
         <button
           onClick={() => setShowNote(!showNote)}
-          className="flex items-center gap-2 text-bear-muted text-sm"
+          className="flex items-center gap-2 text-white/50 hover:text-white/80 transition-colors text-sm font-medium shrink-0"
         >
-          <FileText size={15} /> Note
+          <FileText size={18} /> Note
         </button>
-        <div className="flex-1 overflow-x-auto flex gap-2 pb-1">
+        <div className="flex-1 overflow-x-auto flex gap-2.5 pb-1 hide-scrollbar">
           {exercises.map((ex, i) => {
             const exInfo = getExerciseById(ex.exerciseId)
             const done   = (activeSession?.exercises[i]?.completed.length ?? 0) >= ex.sets.length
             return (
               <motion.button
                 key={ex.exerciseId}
-                whileTap={{ scale: 0.9 }}
+                whileTap={{ scale: 0.92 }}
                 onClick={() => setCurrentExerciseIndex(i)}
-                className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium
+                className={`shrink-0 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap
                   ${i === currentExerciseIndex
-                    ? 'bg-gradient-to-r from-ember to-plasma text-white'
+                    ? 'bg-white text-black shadow-md'
                     : done
-                    ? 'bg-neon/20 text-neon border border-neon/30'
-                    : 'bg-bear-surface text-bear-muted'
+                    ? 'glass border-white/30 text-white'
+                    : 'bg-white/5 text-white/50 border border-white/5'
                   }`}
               >
                 {exInfo?.name.split(' ').slice(-1)[0] ?? ex.exerciseId}
@@ -276,12 +280,13 @@ export default function Workout() {
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            className="fixed inset-x-0 bottom-0 glass rounded-t-3xl p-6 z-50"
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed inset-x-0 bottom-0 glass rounded-t-[32px] p-6 z-50 border-t border-white/10 shadow-2xl safe-bottom"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-bold text-bear-bright">Session Note</span>
-              <button onClick={() => setShowNote(false)}>
-                <X size={20} className="text-bear-muted" />
+            <div className="flex items-center justify-between mb-4 px-2">
+              <span className="font-bold text-white tracking-wide text-lg">Session Note</span>
+              <button onClick={() => setShowNote(false)} className="p-2 bg-white/10 rounded-full active:scale-90 transition-transform">
+                <X size={20} className="text-white" />
               </button>
             </div>
             <textarea
@@ -290,11 +295,11 @@ export default function Workout() {
                 setNoteText(e.target.value)
                 updateNote(e.target.value)
               }}
-              placeholder="How did it go? Any PRs, injuries, energy level…"
+              placeholder="How did it go? Any PRs, injuries, or vibes..."
               rows={4}
-              className="w-full bg-bear-surface text-bear-text placeholder-bear-muted
-                px-4 py-3 rounded-xl outline-none border border-bear-rim/50
-                focus:border-plasma/60 resize-none"
+              className="w-full bg-black/20 text-white placeholder-white/30
+                px-5 py-4 rounded-2xl outline-none border border-white/10
+                focus:border-white/30 transition-colors resize-none mb-4"
             />
           </motion.div>
         )}

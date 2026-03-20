@@ -77,7 +77,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-navy">
+      <div className="min-h-screen mesh-bg">
         <AnimatedRoutes />
         <A2HSPrompt />
       </div>

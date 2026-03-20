@@ -5,7 +5,7 @@ import { Flame, Zap, ChevronRight, Dumbbell, TrendingUp, Calendar, Star } from '
 import { BarChart, Bar, ResponsiveContainer, Cell } from 'recharts'
 import { useGymBearStore } from '../store/useGymBearStore'
 import { useWorkoutStore } from '../store/useWorkoutStore'
-import { useAIPlan, useBrunoQuote } from '../hooks/useAIPlan'
+import { useBrunoQuote } from '../hooks/useAIPlan'
 import { useCoachStore } from '../store/useCoachStore'
 import { loadStreak, loadAllSessions } from '../lib/storage'
 import { isGymDay, todayDayName, DAY_LABELS, DAY_NAMES, type DayName } from '../lib/dates'
@@ -32,9 +32,8 @@ export default function Home() {
   const navigate    = useNavigate()
   const userProfile = useGymBearStore((s) => s.userProfile)
   const bruno        = useGymBearStore((s) => s.bruno)
-  const { isWorkoutActive }         = useWorkoutStore()
-  const { plan, loading: planLoading } = useAIPlan()
-  const quote                           = useBrunoQuote()
+  const { isWorkoutActive, plan }  = useWorkoutStore()
+  const quote                       = useBrunoQuote()
   const { insights, runAnalysis }       = useCoachStore()
 
   const [streak, setStreak]     = useState({ current: 0, best: 0 })
@@ -183,92 +182,112 @@ export default function Home() {
             <div className="glass overflow-hidden">
               <div className="h-0.5 bg-gradient-to-r from-ember to-plasma" />
               <div className="p-5">
-                <div className="flex items-start justify-between mb-1">
-                  <div>
-                    <p className="text-[10px] text-ember font-semibold uppercase tracking-widest mb-0.5">
-                      Today's Session
+                {!plan ? (
+                  /* ── No plan yet: guide to PlanBuilder ── */
+                  <>
+                    <p className="text-[10px] text-ember font-semibold uppercase tracking-widest mb-0.5">Today's Session</p>
+                    <h2 className="font-display text-3xl text-bear-bright leading-tight mb-3">Ready to train</h2>
+                    <p className="text-bear-muted text-sm mb-4 leading-relaxed">
+                      Build your workout plan manually or let AI suggest one based on your history.
                     </p>
-                    <h2 className="font-display text-3xl text-bear-bright leading-tight">
-                      {planLoading ? 'Building…' : (muscleLabels || 'Freestyle')}
-                    </h2>
-                  </div>
-                  {plan && (
-                    <span className="text-bear-muted text-xs shrink-0 mt-1">
-                      ~{plan.estimatedMinutes}min
-                    </span>
-                  )}
-                </div>
-
-                {/* Collapsed preview */}
-                {plan && !planExpanded && (
-                  <div className="flex flex-wrap gap-1.5 mb-4 mt-2">
-                    {plan.exercises.slice(0, 3).map((ex) => {
-                      const exercise = getExerciseById(ex.exerciseId)
-                      return exercise ? (
-                        <span key={ex.exerciseId}
-                          className="px-2.5 py-1 rounded-full bg-bear-surface text-bear-text text-[11px] flex items-center gap-1">
-                          <Dumbbell size={10} className="text-ember/70" />
-                          {exercise.name.split(' ').slice(-1)[0]}
-                        </span>
-                      ) : null
-                    })}
-                    {plan.exercises.length > 3 && (
-                      <span className="px-2.5 py-1 rounded-full bg-bear-surface text-bear-muted text-[11px]">
-                        +{plan.exercises.length - 3}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {/* Expanded view */}
-                <AnimatePresence>
-                  {planExpanded && plan && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden mb-4"
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => navigate('/plan-builder')}
+                      className="w-full bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg"
                     >
-                      <div className="flex flex-col gap-2 mt-2">
-                        {plan.exercises.map((ex) => {
+                      <Dumbbell size={18} />
+                      Plan Today's Workout
+                      <ChevronRight size={16} className="ml-auto" />
+                    </motion.button>
+                  </>
+                ) : (
+                  /* ── Plan exists: show summary + start ── */
+                  <>
+                    <div className="flex items-start justify-between mb-1">
+                      <div>
+                        <p className="text-[10px] text-ember font-semibold uppercase tracking-widest mb-0.5">Today's Session</p>
+                        <h2 className="font-display text-3xl text-bear-bright leading-tight">{muscleLabels || 'Freestyle'}</h2>
+                      </div>
+                      <span className="text-bear-muted text-xs shrink-0 mt-1">~{plan.estimatedMinutes}min</span>
+                    </div>
+
+                    {/* Collapsed preview */}
+                    {!planExpanded && (
+                      <div className="flex flex-wrap gap-1.5 mb-4 mt-2">
+                        {plan.exercises.slice(0, 3).map((ex) => {
                           const exercise = getExerciseById(ex.exerciseId)
                           return exercise ? (
-                            <div key={ex.exerciseId} className="flex items-center gap-2 text-sm text-bear-text">
-                              <Dumbbell size={13} className="text-ember/60 shrink-0" />
-                              <span className="flex-1">{exercise.name}</span>
-                              <span className="text-bear-muted text-xs">
-                                {ex.sets.length}×{ex.sets[0].targetReps}
-                              </span>
-                            </div>
+                            <span key={ex.exerciseId}
+                              className="px-2.5 py-1 rounded-full bg-bear-surface text-bear-text text-[11px] flex items-center gap-1">
+                              <Dumbbell size={10} className="text-ember/70" />
+                              {exercise.name.split(' ').slice(-1)[0]}
+                            </span>
                           ) : null
                         })}
+                        {plan.exercises.length > 3 && (
+                          <span className="px-2.5 py-1 rounded-full bg-bear-surface text-bear-muted text-[11px]">
+                            +{plan.exercises.length - 3}
+                          </span>
+                        )}
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    )}
 
-                <div className="flex gap-2">
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => navigate('/workout')}
-                    className="flex-1 bg-gradient-to-r from-ember to-ember/80 text-white font-bold
-                      py-4 rounded-xl flex items-center justify-center gap-2"
-                  >
-                    <Zap size={18} />
-                    {isWorkoutActive ? 'Resume Workout' : 'Start Workout'}
-                    <ChevronRight size={16} className="ml-auto" />
-                  </motion.button>
-                  {plan && (
-                    <button
-                      onClick={() => setPlanExpanded(!planExpanded)}
-                      className="w-12 rounded-xl bg-bear-surface text-bear-muted flex items-center justify-center"
-                    >
-                      <motion.div animate={{ rotate: planExpanded ? 90 : 0 }}>
-                        <ChevronRight size={18} />
-                      </motion.div>
-                    </button>
-                  )}
-                </div>
+                    {/* Expanded view */}
+                    <AnimatePresence>
+                      {planExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden mb-4"
+                        >
+                          <div className="flex flex-col gap-2 mt-2">
+                            {plan.exercises.map((ex) => {
+                              const exercise = getExerciseById(ex.exerciseId)
+                              return exercise ? (
+                                <div key={ex.exerciseId} className="flex items-center gap-2 text-sm text-bear-text">
+                                  <Dumbbell size={13} className="text-ember/60 shrink-0" />
+                                  <span className="flex-1">{exercise.name}</span>
+                                  <span className="text-bear-muted text-xs">{ex.sets.length}×{ex.sets[0].targetReps}</span>
+                                </div>
+                              ) : null
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <div className="flex gap-2">
+                      <motion.button
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => navigate('/workout')}
+                        className="flex-1 bg-gradient-to-r from-ember to-ember/80 text-white font-bold
+                          py-4 rounded-xl flex items-center justify-center gap-2"
+                      >
+                        <Zap size={18} />
+                        {isWorkoutActive ? 'Resume Workout' : 'Start Workout'}
+                        <ChevronRight size={16} className="ml-auto" />
+                      </motion.button>
+                      <div className="flex flex-col gap-1.5">
+                        <button
+                          onClick={() => setPlanExpanded(!planExpanded)}
+                          className="flex-1 w-12 rounded-xl bg-bear-surface text-bear-muted flex items-center justify-center"
+                        >
+                          <motion.div animate={{ rotate: planExpanded ? 90 : 0 }}>
+                            <ChevronRight size={18} />
+                          </motion.div>
+                        </button>
+                        <button
+                          onClick={() => navigate('/plan-builder')}
+                          className="flex-1 w-12 rounded-xl bg-bear-surface text-bear-muted flex items-center justify-center text-[10px] font-semibold"
+                          title="Edit plan"
+                        >
+                          <Dumbbell size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           ) : (
