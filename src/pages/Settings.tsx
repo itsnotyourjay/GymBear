@@ -8,9 +8,10 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft, ChevronRight, Target, Calendar, Clock, Sliders,
-  Lock, Download, Trash2, Check, AlertTriangle,
+  Lock, Download, Trash2, Check, AlertTriangle, Brain, Bell, Palette, Ghost, Zap,
 } from 'lucide-react'
 import { useGymBearStore } from '../store/useGymBearStore'
+import { usePushNotifications } from '../hooks/usePushNotifications'
 import { saveUserProfile, clearAllLocalData, loadAllSessions, loadPR } from '../lib/storage'
 import { EXERCISES } from '../data/exercises'
 import { hashPIN } from '../lib/pin'
@@ -18,6 +19,21 @@ import { DAY_NAMES, DAY_LABELS, type DayName } from '../lib/dates'
 import BottomNav from '../components/BottomNav'
 
 // ── Small reusable row ────────────────────────────────────────────────────────
+function ToggleSwitch({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      onClick={() => onChange(!on)}
+      className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${on ? 'bg-ember' : 'bg-blue-dark/60'}`}
+    >
+      <motion.div
+        animate={{ x: on ? 17 : 0 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        className="w-5 h-5 rounded-full bg-white shadow"
+      />
+    </button>
+  )
+}
+
 function SettingsRow({
   icon: Icon, label, value, onClick,
 }: { icon: typeof Target; label: string; value?: string; onClick?: () => void }) {
@@ -85,6 +101,18 @@ export default function Settings() {
   const [modal, setModal]       = useState<ActiveModal>(null)
   const [saved, setSaved]       = useState(false)
   const [exporting, setExport]  = useState(false)
+
+  // Coaching / notifications
+  const [aiInsightsOn, setAiInsightsOn] = useState(true)
+  const { permission, subscription, subscribe, unsubscribe, isLoading: pushLoading } = usePushNotifications()
+  const pushEnabled = permission === 'granted' && !!subscription
+
+  // Appearance theme
+  const [theme, setTheme] = useState<'ember' | 'ghost'>('ember')
+
+  // Challenge toggles
+  const [ghostRaceOn, setGhostRaceOn] = useState(true)
+  const [communityOn, setCommunityOn] = useState(true)
 
   // Edit buffers
   const [editGoal, setEditGoal]             = useState(userProfile.goal)
@@ -235,6 +263,87 @@ export default function Settings() {
               <span className="flex-1 text-red-elec/90 text-sm">Clear all data</span>
               <ChevronRight size={14} className="text-red-elec/30 shrink-0" />
             </button>
+          </SectionCard>
+        </div>
+
+        {/* Coaching */}
+        <div>
+          <p className="text-off-white/40 text-xs font-bold uppercase tracking-wider mb-2 px-1">
+            Coaching
+          </p>
+          <SectionCard>
+            <div className="w-full flex items-center gap-3 px-4 py-3.5">
+              <div className="w-8 h-8 rounded-lg bg-plasma/20 flex items-center justify-center shrink-0">
+                <Brain size={15} className="text-plasma" />
+              </div>
+              <span className="flex-1 text-off-white/80 text-sm">AI Insights</span>
+              <ToggleSwitch on={aiInsightsOn} onChange={setAiInsightsOn} />
+            </div>
+            <div className="w-full flex items-center gap-3 px-4 py-3.5">
+              <div className="w-8 h-8 rounded-lg bg-neon/10 flex items-center justify-center shrink-0">
+                <Bell size={15} className="text-neon" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-off-white/80 text-sm">Push Notifications</p>
+                {permission === 'denied' && <p className="text-ember/60 text-xs">Blocked in browser settings</p>}
+              </div>
+              {permission !== 'denied' && (
+                pushEnabled
+                  ? <button onClick={unsubscribe} disabled={pushLoading} className="text-xs text-bear-muted underline">{pushLoading ? '…' : 'Disable'}</button>
+                  : <button onClick={subscribe} disabled={pushLoading || permission === 'unsupported'} className="px-3 py-1 rounded-lg bg-neon/20 text-neon text-xs">{pushLoading ? '…' : 'Enable'}</button>
+              )}
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* Appearance */}
+        <div>
+          <p className="text-off-white/40 text-xs font-bold uppercase tracking-wider mb-2 px-1">
+            Appearance
+          </p>
+          <SectionCard>
+            <div className="w-full flex items-center gap-3 px-4 py-3.5">
+              <div className="w-8 h-8 rounded-lg bg-ember/20 flex items-center justify-center shrink-0">
+                <Palette size={15} className="text-ember" />
+              </div>
+              <span className="flex-1 text-off-white/80 text-sm">Theme</span>
+              <div className="flex gap-2">
+                {(['ember', 'ghost'] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setTheme(t)}
+                    className={`px-3 py-1 rounded-lg text-xs capitalize transition-colors ${
+                      theme === t ? 'bg-ember text-white' : 'bg-blue-dark/40 text-off-white/50'
+                    }`}
+                  >
+                    {t === 'ember' ? '🔥 Ember' : '👻 Ghost'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* Challenges */}
+        <div>
+          <p className="text-off-white/40 text-xs font-bold uppercase tracking-wider mb-2 px-1">
+            Challenges
+          </p>
+          <SectionCard>
+            <div className="w-full flex items-center gap-3 px-4 py-3.5">
+              <div className="w-8 h-8 rounded-lg bg-purple-900/40 flex items-center justify-center shrink-0">
+                <Ghost size={15} className="text-plasma" />
+              </div>
+              <span className="flex-1 text-off-white/80 text-sm">Ghost Race Mode</span>
+              <ToggleSwitch on={ghostRaceOn} onChange={setGhostRaceOn} />
+            </div>
+            <div className="w-full flex items-center gap-3 px-4 py-3.5">
+              <div className="w-8 h-8 rounded-lg bg-neon/10 flex items-center justify-center shrink-0">
+                <Zap size={15} className="text-neon" />
+              </div>
+              <span className="flex-1 text-off-white/80 text-sm">Community Challenges</span>
+              <ToggleSwitch on={communityOn} onChange={setCommunityOn} />
+            </div>
           </SectionCard>
         </div>
 

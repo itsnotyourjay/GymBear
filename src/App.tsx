@@ -15,6 +15,8 @@ const History         = lazy(() => import('./pages/History'))
 const Wardrobe        = lazy(() => import('./pages/Wardrobe'))
 const Progress        = lazy(() => import('./pages/Progress'))
 const Settings        = lazy(() => import('./pages/Settings'))
+const PlanBuilder     = lazy(() => import('./pages/PlanBuilder'))
+const SessionComplete = lazy(() => import('./pages/SessionComplete'))
 
 const slideVariants = {
   initial: { x: 24, opacity: 0 },
@@ -51,13 +53,15 @@ function AnimatedRoutes() {
               path="/onboarding"
               element={isOnboarded ? <Navigate to="/" replace /> : <Onboarding />}
             />
-            <Route path="/home"     element={<Home />} />
-            <Route path="/workout"  element={<Workout />} />
-            <Route path="/history"  element={<History />} />
-            <Route path="/progress" element={<Progress />} />
-            <Route path="/library"  element={<ExerciseLibrary />} />
-            <Route path="/wardrobe" element={<Wardrobe />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/home"          element={<Home />} />
+            <Route path="/workout"       element={<Workout />} />
+            <Route path="/history"       element={<History />} />
+            <Route path="/progress"      element={<Progress />} />
+            <Route path="/library"       element={<ExerciseLibrary />} />
+            <Route path="/wardrobe"      element={<Wardrobe />} />
+            <Route path="/settings"      element={<Settings />} />
+            <Route path="/plan-builder"  element={<PlanBuilder />} />
+            <Route path="/session-complete" element={<SessionComplete />} />
             <Route path="*"         element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

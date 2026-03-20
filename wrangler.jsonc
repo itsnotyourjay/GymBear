@@ -1,0 +1,16 @@
+{
+  "name": "gymbear-worker",
+  "compatibility_date": "2026-03-20",
+  "main": "worker/src/index.ts",
+  "compatibility_flags": ["nodejs_compat"],
+  "kv_namespaces": [
+    {
+      "binding": "GYMBEAR_KV",
+      "id": "e995f4d85a994d61a9c239deb5f6839b",
+      "preview_id": "8df7241e057249b39230d6357451f221"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  }
+}

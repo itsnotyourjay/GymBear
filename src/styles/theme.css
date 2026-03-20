@@ -1,0 +1,136 @@
+/* ─────────────────────────────────────────────────────────────────
+   GymBear Global Theme — Enhancement §1.2
+   Import this ONCE at the top of src/main.tsx
+   ───────────────────────────────────────────────────────────────── */
+
+/* ── Typography imports ────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body:    'Space Grotesk', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Theme accent variables (changed per theme selection) */
+  --accent-primary:   #FF3D5A;
+  --accent-secondary: #7B5EFF;
+  --accent-neon:      #00F5C4;
+  --bg-void:          #090912;
+  --bg-abyss:         #0D0D1A;
+  --bg-surface:       #1A1A3E;
+}
+
+/* Ember theme overrides */
+[data-theme="ember"] {
+  --accent-primary:   #FF6B35;
+  --accent-secondary: #FF3D5A;
+  --bg-void:          #0F0908;
+  --bg-abyss:         #1A0E0A;
+  --bg-surface:       #2A1A12;
+}
+
+/* Ghost theme overrides */
+[data-theme="ghost"] {
+  --accent-primary:   #9898E8;
+  --accent-secondary: #6868C8;
+  --bg-void:          #040406;
+  --bg-abyss:         #080810;
+  --bg-surface:       #10101C;
+}
+
+/* ── Base ───────────────────────────────────────────────────────── */
+body {
+  font-family: var(--font-body);
+  background: var(--bg-void);
+  color: #C8C8F0;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+
+/* ── Noise grain overlay (subtle texture) ───────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+}
+
+/* ── Custom scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #3A3A7A; border-radius: 99px; }
+
+/* ── Glassmorphism card ─────────────────────────────────────────── */
+.glass {
+  background: rgba(18, 18, 42, 0.72);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(123, 94, 255, 0.18);
+  border-radius: 20px;
+}
+
+/* ── Glow utilities ─────────────────────────────────────────────── */
+.glow-ember  { box-shadow: 0 0 24px rgba(255,61,90,0.40),   0 0 60px rgba(255,61,90,0.12); }
+.glow-plasma { box-shadow: 0 0 24px rgba(123,94,255,0.40),  0 0 60px rgba(123,94,255,0.12); }
+.glow-neon   { box-shadow: 0 0 24px rgba(0,245,196,0.40),   0 0 60px rgba(0,245,196,0.12); }
+.glow-gold   { box-shadow: 0 0 20px rgba(255,215,0,0.45); }
+
+/* ── Mesh gradient background ───────────────────────────────────── */
+.mesh-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%,  rgba(123,94,255,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%,  rgba(255,61,90,0.10)  0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(0,245,196,0.06)  0%, transparent 70%),
+    #090912;
+}
+
+/* ── Tap highlight removal ──────────────────────────────────────── */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* ── Safe area padding ──────────────────────────────────────────── */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-top    { padding-top:    env(safe-area-inset-top); }
+
+/* ── Skeleton shimmer loader ────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #12122A 25%, #1A1A3E 50%, #12122A 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 12px;
+}
+
+/* ── PR shimmer card ────────────────────────────────────────────── */
+@keyframes goldShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.pr-shimmer {
+  background: linear-gradient(90deg, rgba(255,215,0,0.05) 25%, rgba(255,215,0,0.12) 50%, rgba(255,215,0,0.05) 75%);
+  background-size: 200% 100%;
+  animation: goldShimmer 2s infinite;
+}
+
+/* ── Streak pulse ring ──────────────────────────────────────────── */
+@keyframes streakPing {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0;   }
+}
+.streak-ping::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 2px solid #FF3D5A;
+  animation: streakPing 1.4s ease-out infinite;
+}

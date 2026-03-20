@@ -28,6 +28,11 @@ Thumbs.db
 # Editor
 .vscode/settings.json
 *.suo
+
+# Project docs (local only)
+GYMBEAR_TECHNICAL_SUMMARY.md
+GYMBEAR_DEEP_TECH_EXPLAINER.md
+GYMBEAR_ENHANCEMENT_PROMPT.md
 *.user
 
 # PWA

@@ -1,12 +1,18 @@
+/**
+ * BottomNav — Enhancement §1.3 [REPLACE]
+ * Glass nav bar with spring animations, shared-layout active pill,
+ * and safe-area support for iPhone Safari.
+ */
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, Dumbbell, BarChart2, Clock, Settings } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Home, Dumbbell, BarChart2, Shirt, MoreHorizontal } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { path: '/home',     Icon: Home,     label: 'Home'     },
-  { path: '/library',  Icon: Dumbbell, label: 'Library'  },
-  { path: '/progress', Icon: BarChart2, label: 'Progress' },
-  { path: '/history',  Icon: Clock,    label: 'History'  },
-  { path: '/settings', Icon: Settings,  label: 'Settings' },
+  { path: '/home',     Icon: Home,          label: 'Home'     },
+  { path: '/workout',  Icon: Dumbbell,       label: 'Workout'  },
+  { path: '/progress', Icon: BarChart2,      label: 'Progress' },
+  { path: '/wardrobe', Icon: Shirt,          label: 'Wardrobe' },
+  { path: '/settings', Icon: MoreHorizontal, label: 'More'     },
 ]
 
 export default function BottomNav() {
@@ -14,27 +20,70 @@ export default function BottomNav() {
   const navigate = useNavigate()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-navy border-t border-blue-dark/60
-      flex items-center justify-around px-2 pb-safe z-40"
-      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 px-2"
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
     >
-      {NAV_ITEMS.map(({ path, Icon, label }) => {
-        const active = location.pathname === path
-        return (
-          <button
-            key={path}
-            onClick={() => navigate(path)}
-            className={`flex flex-col items-center gap-0.5 py-3 px-4 min-w-[44px] min-h-[44px]
-              transition-colors rounded-xl
-              ${active ? 'text-red-elec' : 'text-off-white/40 hover:text-off-white/70'}`}
-          >
-            <Icon size={22} strokeWidth={active ? 2.5 : 1.75} />
-            <span className={`text-[10px] font-medium ${active ? 'opacity-100' : 'opacity-60'}`}>
-              {label}
-            </span>
-          </button>
-        )
-      })}
+      <div
+        className="glass mx-auto max-w-lg flex items-center justify-around"
+        style={{
+          height: 68,
+          boxShadow: '0 0 24px rgba(123,94,255,0.20), 0 0 60px rgba(123,94,255,0.08)',
+        }}
+      >
+        {NAV_ITEMS.map(({ path, Icon, label }, idx) => {
+          const active = location.pathname === path
+          return (
+            <motion.button
+              key={path}
+              onClick={() => navigate(path)}
+              className="relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
+              whileTap={{ scale: 0.85 }}
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.06, type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              {/* Active indicator pill */}
+              {active && (
+                <motion.div
+                  layoutId="navIndicator"
+                  className="absolute top-1.5 w-8 h-1 rounded-full bg-ember"
+                  style={{ boxShadow: '0 0 10px rgba(255,61,90,0.60)' }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
+
+              {/* Icon with bounce when active */}
+              <motion.div
+                animate={active ? { y: [0, -4, 0] } : { y: 0 }}
+                transition={{ duration: 0.25, type: 'spring', stiffness: 400, damping: 15 }}
+              >
+                <Icon
+                  size={22}
+                  strokeWidth={active ? 2.5 : 1.75}
+                  className={active ? 'text-ember' : 'text-bear-muted'}
+                />
+              </motion.div>
+
+              {/* Label animates in only for active */}
+              <AnimatePresence>
+                {active && (
+                  <motion.span
+                    key="label"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 4 }}
+                    transition={{ duration: 0.15 }}
+                    className="text-[9px] font-display tracking-wider text-ember leading-none"
+                  >
+                    {label.toUpperCase()}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          )
+        })}
+      </div>
     </nav>
   )
 }
